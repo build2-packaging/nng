@@ -1,14 +1,14 @@
-cxx.std = latest
+c.std = latest
 
-using cxx
 using c
 
-hxx{*}: extension = h
-cxx{*}: extension = cpp
+h{*}: extension = h
+c{*}: extension = c
 
 # Assume headers are importable unless stated otherwise.
-#
-hxx{*}: cxx.importable = true
+h{*}: c.importable = true
+
+config [bool] config.libnng.elide_deprecated ?= false
 
 # The test target for cross-testing (running tests under Wine, etc).
-test.target = $cxx.target
+test.target = $c.target

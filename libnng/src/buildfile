@@ -1,0 +1,78 @@
+# Public headers.
+pub = [dir_path] ../include/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{nng}: $pub/{$pub_hdrs}
+lib{nng}: {h c}{** -**_test}
+
+platform_poptions = # Platform specific poptions.
+platform_libs = # Platform specific libraries.
+switch $c.target.class
+{
+    case 'windows'
+    {
+        if ($c.target.system != 'mingw32')
+        {
+            platform_poptions += -D_CRT_SECURE_NO_WARNINGS
+        }
+
+        if ($config.libftxui.use_ms_terminal_fallback)
+        {
+            platform_poptions += -DFTXUI_MICROSOFT_TERMINAL_FALLBACK
+        }
+
+        platform_poptions += -DUNICODE -D_UNICODE
+    }
+    default
+    {
+		platform_libs += -pthread
+    }
+}
+
+# Build options.
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+c.poptions += "-I$out_pfx_src" "-I$src_pfx_src" \
+              "-I$out_pfx_inc" "-I$src_pfx_inc" \
+              $platform_poptions
+c.libs += $platform_libs
+
+if ($config.libnng.elide_deprecated)
+{
+    c.poptions += -DNNG_ELIDE_DEPRECATED
+}
+
+NNG_SHARED_LIB
+
+{hbmia obja}{*}: c.poptions += -DNNG_STATIC_LIB
+{hbmis objs}{*}: c.poptions += -DNNG_SHARED_LIB
+
+# Export options.
+lib{nng}:
+{
+  c.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  c.export.libs = $platform_libs
+}
+
+liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+if $version.pre_release
+{
+  lib{nng}: bin.lib.version = "-$version.project_id"
+}
+else
+{
+  lib{nng}: bin.lib.version = "-$version.major.$version.minor"
+}
+
+# Don't install private headers.
+h{*}: install = false
