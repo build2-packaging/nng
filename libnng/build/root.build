@@ -1,4 +1,4 @@
-c.std = latest
+#c.std = latest
 
 using c
 
@@ -9,6 +9,36 @@ c{*}: extension = c
 h{*}: c.importable = true
 
 config [bool] config.libnng.elide_deprecated ?= false
+
+# protocol options
+config [bool] config.libnng.proto_bus0 ?= true
+config [bool] config.libnng.proto_pair0 ?= true
+config [bool] config.libnng.proto_pair1 ?= true
+config [bool] config.libnng.proto_push0 ?= true
+config [bool] config.libnng.proto_pull0 ?= true
+config [bool] config.libnng.proto_pub0 ?= true
+config [bool] config.libnng.proto_sub0 ?= true
+config [bool] config.libnng.proto_req0 ?= true
+config [bool] config.libnng.proto_rep0 ?= true
+config [bool] config.libnng.proto_surveyor0 ?= true
+config [bool] config.libnng.proto_respondent0 ?= true
+
+# transport options
+config [bool] config.libnng.transport_inproc ?= true
+config [bool] config.libnng.transport_ipc ?= true
+config [bool] config.libnng.transport_tcp ?= true
+config [bool] config.libnng.transport_tls ?= false
+config [bool] config.libnng.transport_ws ?= true
+
+# supplemental options
+config [bool] config.libnng.supp_base64 ?= true
+config [bool] config.libnng.supp_http ?= true
+config [bool] config.libnng.supp_sha1 ?= true
+config [bool] config.libnng.supp_tls ?= false
+config [bool] config.libnng.supp_websocket ?= true
+
+# can be either 'none', 'mbdedtls' or 'wolfssl'
+config [string] config.libnng.tls_engine ?= none
 
 # The test target for cross-testing (running tests under Wine, etc).
 test.target = $c.target

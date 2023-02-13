@@ -5,8 +5,153 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
+is_windows = ($c.target.class == 'windows')
+is_posix = (!$is_windows)
+use_mbedtls = ($config.libnng.tls_engine == 'mbedtls')
+use_wolfssl = ($config.libnng.tls_engine == 'wolfssl')
+
 lib{nng}: $pub/{$pub_hdrs}
-lib{nng}: {h c}{** -**_test}
+lib{nng}: {h c}{compat/** -**_test}
+lib{nng}: {h c}{core/** -**_test}
+lib{nng}: {h c}{platform/windows/** -**_test}: include = $is_windows
+lib{nng}: {h c}{platform/posix/** -**_test}: include = $is_posix
+
+lib{nng}: {h c}{sp/transport}
+
+# protocol compilation
+lib{nng}: c{sp/protocol/bus0/bus}: include = $config.libnng.proto_bus0
+lib{nng}: c{sp/protocol/pair0/pair}: include = $config.libnng.proto_pair0
+lib{nng}: c{sp/protocol/pair1/pair sp/protocol/pair1/pair1_poly}: include = $config.libnng.proto_pair1
+lib{nng}: c{sp/protocol/pipeline0/pull}: include = $config.libnng.proto_pull0
+lib{nng}: c{sp/protocol/pipeline0/push}: include = $config.libnng.proto_push0
+lib{nng}: c{sp/protocol/pubsub0/pub}: include = $config.libnng.proto_pub0
+lib{nng}: c{sp/protocol/pubsub0/sub sp/protocol/pubsub0/xsub}: include = $config.libnng.proto_sub0
+lib{nng}: c{sp/protocol/reqrep0/req sp/protocol/reqrep0/xreq}: include = $config.libnng.proto_req0
+lib{nng}: c{sp/protocol/reqrep0/rep sp/protocol/reqrep0/xrep}: include = $config.libnng.proto_rep0
+lib{nng}: c{sp/protocol/survey0/survey sp/protocol/survey0/xsurvey}: include = $config.libnng.proto_surveyor0
+lib{nng}: c{sp/protocol/survey0/respond sp/protocol/survey0/xrespond}: include = $config.libnng.proto_respondent0
+
+if $config.libnng.proto_bus0
+{
+    c.poptions += -DNNG_HAVE_BUS0
+}
+
+if $config.libnng.proto_pair0
+{
+    c.poptions += -DNNG_HAVE_PAIR0
+}
+
+if $config.libnng.proto_pair1
+{
+    c.poptions += -DNNG_HAVE_PAIR1
+}
+
+if $config.libnng.proto_pull0
+{
+    c.poptions += -DNNG_HAVE_PULL0
+}
+
+if $config.libnng.proto_push0
+{
+    c.poptions += -DNNG_HAVE_PUSH0
+}
+
+if $config.libnng.proto_pub0
+{
+    c.poptions += -DNNG_HAVE_PUB0
+}
+
+if $config.libnng.proto_sub0
+{
+    c.poptions += -DNNG_HAVE_SUB0
+}
+
+if $config.libnng.proto_req0
+{
+    c.poptions += -DNNG_HAVE_REQ0
+}
+
+if $config.libnng.proto_rep0
+{
+    c.poptions += -DNNG_HAVE_REP0
+}
+
+if $config.libnng.proto_surveyor0
+{
+    c.poptions += -DNNG_HAVE_SURVEYOR0
+}
+
+if $config.libnng.proto_respondent0
+{
+    c.poptions += -DNNG_HAVE_RESPONDENT0
+}
+
+# transport compilation
+lib{nng}: c{sp/transport/inproc/inproc}: include = $config.libnng.transport_inproc
+lib{nng}: c{sp/transport/ipc/ipc}: include = $config.libnng.transport_ipc
+lib{nng}: c{sp/transport/tcp/tcp}: include = $config.libnng.transport_tcp
+lib{nng}: c{sp/transport/tls/tls}: include = $config.libnng.transport_tls
+lib{nng}: c{sp/transport/ws/websocket}: include = $config.libnng.transport_ws
+
+if $config.libnng.transport_inproc
+{
+    c.poptions += -DNNG_TRANSPORT_INPROC
+}
+
+if $config.libnng.transport_ipc
+{
+    c.poptions += -DNNG_TRANSPORT_IPC
+}
+
+if $config.libnng.transport_tcp
+{
+    c.poptions += -DNNG_TRANSPORT_TCP
+}
+
+if $config.libnng.transport_tls
+{
+    c.poptions += -DNNG_TRANSPORT_TLS
+}
+
+if $config.libnng.transport_ws
+{
+    c.poptions += -DNNG_TRANSPORT_WS
+}
+
+# supplemental compilation
+lib{nng}: {h c}{supplemental/base64/base64}: include = $config.libnng.supp_base64
+lib{nng}: c{supplemental/http/http_public} h{supplemental/http/http_api}
+lib{nng}: c{supplemental/http/* -**_test -supplemental/http/http_public}: include = $config.libnng.supp_http
+lib{nng}: {h c}{supplemental/sha1/sha1}: include = $config.libnng.supp_sha1
+lib{nng}: h{supplemental/tls/tls_api} c{supplemental/tls/tls_common}
+lib{nng}: c{supplemental/util/*}
+# TODO SSL support currently not there
+# lib{nng}: {h c}{supplemental/tls/mbedtls/*}: include = ($config.libnng.supp_tls && $use_mbedtls)
+# lib{nng}: {h c}{supplemental/tls/wolfssl/*}: include = ($config.libnng.supp_tls && $use_wolfssl)
+lib{nng}: {h c}{supplemental/websocket/websocket}: include = $config.libnng.supp_websocket
+lib{nng}: c{supplemental/websocket/stub}: include = (!$config.libnng.supp_websocket)
+
+if $config.libnng.supp_http
+{
+    c.poptions += -DNNG_SUPP_HTTP
+}
+
+if ($config.libnng.supp_tls && ($use_mbedtls || $use_wolfssl))
+{
+    c.poptions += -DNNG_SUPP_TLS
+    if $use_mbedtls
+    {
+        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed
+        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed
+    }
+
+    if $use_wolfssl
+    {
+        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
+        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
+    }
+}
+
 
 platform_poptions = # Platform specific poptions.
 platform_libs = # Platform specific libraries.
@@ -14,22 +159,40 @@ switch $c.target.class
 {
     case 'windows'
     {
-        if ($c.target.system != 'mingw32')
-        {
-            platform_poptions += -D_CRT_SECURE_NO_WARNINGS
-        }
-
-        if ($config.libftxui.use_ms_terminal_fallback)
-        {
-            platform_poptions += -DFTXUI_MICROSOFT_TERMINAL_FALLBACK
-        }
-
-        platform_poptions += -DUNICODE -D_UNICODE
+        platform_libs += ws2_32.lib mswsock.lib advapi32.lib
+        platform_poptions += -D_WIN32_WINNT=0x0600 -DNNG_PLATFORM_WINDOWS -D_CRT_SECURE_NO_WARNINGS -D_CRT_RAND_S
+    }
+    case 'linux'
+    {
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_LINUX -DNNG_USE_EVENTFD -DNNG_HAVE_ABSTRACT_SOCKETS
+    }
+    case 'freebsd'
+    {
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
+    }
+    case 'netbsd'
+    {
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
+    }
+    case 'openbsd'
+    {
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
+    }
+    case 'macos'
+    {
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_DARWIN
     }
     default
     {
-		platform_libs += -pthread
+        # hope for POSIX
+        platform_poptions +=  -DNNG_PLATFORM_POSIX
     }
+}
+
+if $is_posix
+{
+    platform_poptions += -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE -D_POSIX_PTHREAD_SEMANTICS
+    platform_libs += -pthread
 }
 
 # Build options.
@@ -47,8 +210,6 @@ if ($config.libnng.elide_deprecated)
 {
     c.poptions += -DNNG_ELIDE_DEPRECATED
 }
-
-NNG_SHARED_LIB
 
 {hbmia obja}{*}: c.poptions += -DNNG_STATIC_LIB
 {hbmis objs}{*}: c.poptions += -DNNG_SHARED_LIB
