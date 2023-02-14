@@ -1,0 +1,4 @@
+import impl_libs = libnng%lib{nng}
+
+exe{reqrep}: c{reqrep}
+exe{reqrep}: $impl_libs

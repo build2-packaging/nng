@@ -1,0 +1,9 @@
+import impl_libs = libnng%lib{nng}
+
+exe{async_client}: c{client}
+exe{async_client}: $impl_libs
+
+exe{async_server}: c{server}
+exe{async_server}: $impl_libs
+
+./: exe{async_client} exe{async_server}

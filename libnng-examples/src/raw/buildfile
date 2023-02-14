@@ -1,0 +1,4 @@
+import impl_libs = libnng%lib{nng}
+
+exe{raw}: c{raw}
+exe{raw}: $impl_libs

@@ -1,2 +1,4 @@
 : 1
 location: libnng/
+:
+location: libnng-examples/

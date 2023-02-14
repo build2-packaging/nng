@@ -1,0 +1,4 @@
+import impl_libs = libnng%lib{nng}
+
+exe{http_client}: c{http_client}
+exe{http_client}: $impl_libs
