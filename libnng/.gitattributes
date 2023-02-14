@@ -4,5 +4,3 @@ src/core symlink=dir
 src/platform symlink=dir
 src/sp symlink=dir
 src/supplemental symlink=dir
-src/testing symlink=dir
-src/tools symlink=dir
