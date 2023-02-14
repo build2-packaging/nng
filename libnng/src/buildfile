@@ -10,12 +10,17 @@ is_posix = (!$is_windows)
 use_mbedtls = ($config.libnng.tls_engine == 'mbedtls')
 use_wolfssl = ($config.libnng.tls_engine == 'wolfssl')
 
+if ($use_mbedtls || $use_wolfssl)
+{
+    fail 'TLS is currently not supported'
+}
+
 lib{nng}: $pub/{$pub_hdrs}
+lib{nng}: c{*}
 lib{nng}: {h c}{compat/** -**_test}
 lib{nng}: {h c}{core/** -**_test}
 lib{nng}: {h c}{platform/windows/** -**_test}: include = $is_windows
 lib{nng}: {h c}{platform/posix/** -**_test}: include = $is_posix
-
 lib{nng}: {h c}{sp/transport}
 
 # protocol compilation
@@ -125,9 +130,7 @@ lib{nng}: c{supplemental/http/* -**_test -supplemental/http/http_public}: includ
 lib{nng}: {h c}{supplemental/sha1/sha1}: include = $config.libnng.supp_sha1
 lib{nng}: h{supplemental/tls/tls_api} c{supplemental/tls/tls_common}
 lib{nng}: c{supplemental/util/*}
-# TODO SSL support currently not there
-# lib{nng}: {h c}{supplemental/tls/mbedtls/*}: include = ($config.libnng.supp_tls && $use_mbedtls)
-# lib{nng}: {h c}{supplemental/tls/wolfssl/*}: include = ($config.libnng.supp_tls && $use_wolfssl)
+lib{nng}: {h c}{supplemental/tls/mbedtls/*}: include = ($config.libnng.supp_tls && $use_mbedtls)
 lib{nng}: {h c}{supplemental/websocket/websocket}: include = $config.libnng.supp_websocket
 lib{nng}: c{supplemental/websocket/stub}: include = (!$config.libnng.supp_websocket)
 
@@ -185,6 +188,7 @@ switch $c.target.class
     default
     {
         # hope for POSIX
+        warn "This platform may not be supported: $c.target.class"
         platform_poptions +=  -DNNG_PLATFORM_POSIX
     }
 }
