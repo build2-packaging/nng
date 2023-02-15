@@ -14,5 +14,5 @@ package-email: packaging@build2.org ; Mailing list.
 builds: default
 examples: libnng-examples
 
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0-
+depends: * bpkg >= 0.16.0-

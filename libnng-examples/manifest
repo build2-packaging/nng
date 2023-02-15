@@ -13,5 +13,5 @@ package-url: https://github.com/build2-packaging/nng
 package-email: packaging@build2.org ; Mailing list.
 builds: default
 
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0-
+depends: * bpkg >= 0.16.0-

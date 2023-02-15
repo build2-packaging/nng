@@ -36,7 +36,7 @@ jobs:
           submodules: true
       - uses: build2/setup-build2-github-action@v2
         with:
-          build2-version: latest
+          build2-version: staged
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y libdbus-1-dev libbluetooth-dev
       - name: Configure
@@ -64,7 +64,7 @@ jobs:
         submodules: true
     - uses: build2/setup-build2-github-action@v2
       with:
-        build2-version: latest
+        build2-version: staged
     - name: Configure
       run: bdep init -C @cc cc config.config.load=build-config/${{matrix.config.config_file}}
     - name: Build
@@ -99,7 +99,7 @@ jobs:
         submodules: true
     - uses: build2/setup-build2-github-action@v2
       with:
-        build2-version: latest
+        build2-version: staged
         build2-windows-compiler: ${{matrix.config.compiler_type}}
     - name: Configure
       run: bdep init -C ../nng-cc @cc cc config.config.load=build-config/${{matrix.config.config_file}}

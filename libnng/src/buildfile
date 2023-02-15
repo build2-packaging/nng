@@ -7,8 +7,10 @@ pub_hdrs = $($pub/ pub_hdrs)
 
 is_windows = ($c.target.class == 'windows')
 is_posix = (!$is_windows)
+
 use_mbedtls = ($config.libnng.tls_engine == 'mbedtls')
 use_wolfssl = ($config.libnng.tls_engine == 'wolfssl')
+use_supp_tls = ($config.libnng.supp_tls && ($use_mbedtls || $use_wolfssl))
 
 if ($use_mbedtls || $use_wolfssl)
 {
@@ -36,92 +38,12 @@ lib{nng}: c{sp/protocol/reqrep0/rep sp/protocol/reqrep0/xrep}: include = $config
 lib{nng}: c{sp/protocol/survey0/survey sp/protocol/survey0/xsurvey}: include = $config.libnng.proto_surveyor0
 lib{nng}: c{sp/protocol/survey0/respond sp/protocol/survey0/xrespond}: include = $config.libnng.proto_respondent0
 
-if $config.libnng.proto_bus0
-{
-    c.poptions += -DNNG_HAVE_BUS0
-}
-
-if $config.libnng.proto_pair0
-{
-    c.poptions += -DNNG_HAVE_PAIR0
-}
-
-if $config.libnng.proto_pair1
-{
-    c.poptions += -DNNG_HAVE_PAIR1
-}
-
-if $config.libnng.proto_pull0
-{
-    c.poptions += -DNNG_HAVE_PULL0
-}
-
-if $config.libnng.proto_push0
-{
-    c.poptions += -DNNG_HAVE_PUSH0
-}
-
-if $config.libnng.proto_pub0
-{
-    c.poptions += -DNNG_HAVE_PUB0
-}
-
-if $config.libnng.proto_sub0
-{
-    c.poptions += -DNNG_HAVE_SUB0
-}
-
-if $config.libnng.proto_req0
-{
-    c.poptions += -DNNG_HAVE_REQ0
-}
-
-if $config.libnng.proto_rep0
-{
-    c.poptions += -DNNG_HAVE_REP0
-}
-
-if $config.libnng.proto_surveyor0
-{
-    c.poptions += -DNNG_HAVE_SURVEYOR0
-}
-
-if $config.libnng.proto_respondent0
-{
-    c.poptions += -DNNG_HAVE_RESPONDENT0
-}
-
 # transport compilation
 lib{nng}: c{sp/transport/inproc/inproc}: include = $config.libnng.transport_inproc
 lib{nng}: c{sp/transport/ipc/ipc}: include = $config.libnng.transport_ipc
 lib{nng}: c{sp/transport/tcp/tcp}: include = $config.libnng.transport_tcp
 lib{nng}: c{sp/transport/tls/tls}: include = $config.libnng.transport_tls
 lib{nng}: c{sp/transport/ws/websocket}: include = $config.libnng.transport_ws
-
-if $config.libnng.transport_inproc
-{
-    c.poptions += -DNNG_TRANSPORT_INPROC
-}
-
-if $config.libnng.transport_ipc
-{
-    c.poptions += -DNNG_TRANSPORT_IPC
-}
-
-if $config.libnng.transport_tcp
-{
-    c.poptions += -DNNG_TRANSPORT_TCP
-}
-
-if $config.libnng.transport_tls
-{
-    c.poptions += -DNNG_TRANSPORT_TLS
-}
-
-if $config.libnng.transport_ws
-{
-    c.poptions += -DNNG_TRANSPORT_WS
-}
 
 # supplemental compilation
 lib{nng}: {h c}{supplemental/base64/base64}: include = $config.libnng.supp_base64
@@ -134,24 +56,61 @@ lib{nng}: {h c}{supplemental/tls/mbedtls/*}: include = ($config.libnng.supp_tls 
 lib{nng}: {h c}{supplemental/websocket/websocket}: include = $config.libnng.supp_websocket
 lib{nng}: c{supplemental/websocket/stub}: include = (!$config.libnng.supp_websocket)
 
-if $config.libnng.supp_http
-{
-    c.poptions += -DNNG_SUPP_HTTP
-}
 
-if ($config.libnng.supp_tls && ($use_mbedtls || $use_wolfssl))
-{
-    c.poptions += -DNNG_SUPP_TLS
-    if $use_mbedtls
-    {
-        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed
-        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed
-    }
 
-    if $use_wolfssl
+config_flags = $config.libnng.proto_bus0 \
+    $config.libnng.proto_pair0 \
+    $config.libnng.proto_pair1 \
+    $config.libnng.proto_pull0 \
+    $config.libnng.proto_push0 \
+    $config.libnng.proto_pub0 \
+    $config.libnng.proto_sub0 \
+    $config.libnng.proto_req0 \
+    $config.libnng.proto_rep0 \
+    $config.libnng.proto_surveyor0 \
+    $config.libnng.proto_respondent0 \
+    $config.libnng.transport_inproc \
+    $config.libnng.transport_ipc \
+    $config.libnng.transport_tcp \
+    $config.libnng.transport_tls \
+    $config.libnng.transport_ws \
+    $config.libnng.supp_http \
+    $use_supp_tls \
+    ($config.libnng.supp_tls && $use_mbedtls) \
+    ($config.libnng.supp_tls && $use_mbedtls) \
+    ($config.libnng.supp_tls && $use_wolfssl) \
+    ($config.libnng.supp_tls && $use_wolfssl)
+
+config_poptions = NNG_HAVE_BUS0 \
+    NNG_HAVE_PAIR0 \
+    NNG_HAVE_PAIR1 \
+    NNG_HAVE_PULL0 \
+    NNG_HAVE_PUSH0 \
+    NNG_HAVE_PUB0 \
+    NNG_HAVE_SUB0 \
+    NNG_HAVE_REQ0 \
+    NNG_HAVE_REP0 \
+    NNG_HAVE_SURVEYOR0 \
+    NNG_HAVE_RESPONDENT0 \
+    NNG_TRANSPORT_INPROC \
+    NNG_TRANSPORT_IPC \
+    NNG_TRANSPORT_TCP \
+    NNG_TRANSPORT_TLS \
+    NNG_TRANSPORT_WS \
+    NNG_SUPP_HTTP \
+    NNG_SUPP_TLS \
+    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed \
+    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed \
+    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf \
+    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
+
+for i: $integer_sequence(0, $size($config_poptions))
+{
+    flag = ($config_flags[$i])
+    opt = ($config_poptions[$i])
+    if $flag
     {
-        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
-        c.poptions += -DNNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
+        c.poptions += -D$opt
     }
 }
 
