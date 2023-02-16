@@ -1,0 +1,7 @@
+project = libnng-tests
+
+using version
+using config
+using test
+using install
+using dist

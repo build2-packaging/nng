@@ -1,0 +1,14 @@
+import impl_libs = libnng%lib{nng}
+
+
+lib{convey}: {h c}{convey}
+
+tests = c{bus device files httpclient httpserver inproc ipc ipcsupp ipcwinsec multistress nonblock options pipe pollfd scalability stats synch tcpsupp tcp tcp6 udp ws}
+
+for t: $tests
+{
+    test_name = $name($t)_test
+    exe{$test_name}: $t
+    exe{$test_name}: $impl_libs lib{convey}
+    ./: exe{$test_name}
+}

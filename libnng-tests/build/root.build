@@ -3,6 +3,7 @@
 using c
 
 c{*}: extension = c
+h{*}: extension = h
 
 # Assume headers are importable unless stated otherwise.
 h{*}: c.importable = true
