@@ -2,3 +2,5 @@
 location: libnng/
 :
 location: libnng-examples/
+:
+location: libnng-tests/

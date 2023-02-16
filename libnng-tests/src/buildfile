@@ -1,5 +1,5 @@
-import impl_libs = libnng%lib{nng}
 
+import impl_libs = libnng%liba{nng_testing}
 
 lib{convey}: {h c}{convey}
 
@@ -8,7 +8,7 @@ tests = c{bus device files httpclient httpserver inproc ipc ipcsupp ipcwinsec mu
 for t: $tests
 {
     test_name = $name($t)_test
-    exe{$test_name}: $t
+    exe{$test_name}: $t h{stubs}
     exe{$test_name}: $impl_libs lib{convey}
     ./: exe{$test_name}
 }
