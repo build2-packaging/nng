@@ -1,7 +1,7 @@
 
 import impl_libs = libnng%liba{nng_testing}
 
-lib{convey}: {h c}{convey}
+liba{convey}: {h c}{convey}
 
 test_files = c{bus \
     device \
@@ -32,7 +32,7 @@ for file: $test_files
 {
     test_name = $name($file)_test
     exe{$test_name}: $t h{stubs}
-    exe{$test_name}: $impl_libs lib{convey}
+    exe{$test_name}: $impl_libs liba{convey}
     exe{$test_name}: test.options = -v
     exe{$test_name}: test.timeout = /10
     ./: exe{$test_name}
