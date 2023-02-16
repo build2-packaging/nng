@@ -38,3 +38,4 @@ doc/latex
 *.exe.dlls/
 *.exe.manifest
 *.pc
+.nuts_ports
