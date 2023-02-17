@@ -85,7 +85,6 @@ liba{nng_testing}: c{supplemental/tls/tls_test}
 liba{nng_testing}: c{supplemental/websocket/*_test}: include = $config.libnng.supp_websocket
 liba{nng_testing}: liba{nng}
 
-
 config_flags = $config.libnng.proto_bus0 \
     $config.libnng.proto_pair0 \
     $config.libnng.proto_pair1 \
@@ -204,6 +203,8 @@ src_pfx_src = [dir_path] $src_root/src/
 out_pfx_tst = [dir_path] $out_root/src/testing/
 src_pfx_tst = [dir_path] $src_root/src/testing/
 
+testing_poptions =  -DNNG_STATIC_LIB -DNNG_TEST_LIB -DNNG_PRIVATE
+
 c.poptions += "-I$out_pfx_src" "-I$src_pfx_src" \
               "-I$out_pfx_inc" "-I$src_pfx_inc" \
               "-I$out_pfx_tst" "-I$src_pfx_tst" \
@@ -225,7 +226,8 @@ liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
 
 lib{nng_testing}:
 {
-  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" "-I$out_pfx_tst" "-I$src_pfx_tst" $nng_poptions
+  c.poptions = $testing_poptions
+  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" "-I$out_pfx_tst" "-I$src_pfx_tst" $testing_poptions $nng_poptions
   c.export.libs = lib{nng}
 }
 
