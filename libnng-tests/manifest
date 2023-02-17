@@ -5,7 +5,7 @@ project: NNG
 summary: Tests for the NNG library.
 license: MIT
 description-file: README.md
-topics: C
+topics: C, Network, IoT
 url: https://nng.nanomsg.org/
 src-url: https://github.com/nanomsg/nng
 doc-url: https://nng.nanomsg.org/man/
