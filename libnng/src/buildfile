@@ -108,6 +108,7 @@ config_flags = $config.libnng.proto_bus0 \
     ($config.libnng.supp_tls && $use_wolfssl) \
     ($config.libnng.supp_tls && $use_wolfssl)
 
+
 config_poptions = NNG_HAVE_BUS0 \
     NNG_HAVE_PAIR0 \
     NNG_HAVE_PAIR1 \
@@ -131,21 +132,40 @@ config_poptions = NNG_HAVE_BUS0 \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
 
-nng_poptions =
+nng_impl_poptions =
 for i: $integer_sequence(0, $size($config_poptions))
 {
     flag = ($config_flags[$i])
     opt = ($config_poptions[$i])
     if $flag
     {
-        nng_poptions += -D$opt
+        nng_impl_poptions += -D$opt
     }
 }
 
-if ($config.libnng.elide_deprecated)
+config_flags = $config.libnng.elide_deprecated \
+    $config.libnng.set_stacksize \
+    $config.libnng.enable_stats \
+    ($config.libnng.resolve_concurrency != [null]) \
+    ($config.libnng.num_taskq_threads != [null])
+
+config_poptions = NNG_ELIDE_DEPRECATED \
+    NNG_SETSTACKSIZE \
+    NNG_ENABLE_STATS \
+    NNG_RESOLV_CONCURRENCY=$config.libnng.resolve_concurrency \
+    NNG_NUM_TASKQ_THREADS=$config.libnng.num_taskq_threads
+
+for i: $integer_sequence(0, $size($config_poptions))
 {
-    nng_poptions += -DNNG_ELIDE_DEPRECATED
+    flag = ($config_flags[$i])
+    opt = ($config_poptions[$i])
+    if $flag
+    {
+        c.poptions += -D$opt
+    }
 }
+
+c.poptions += -DNNG_MAX_TASKQ_THREADS=$config.libnng.max_taskq_threads
 
 platform_poptions = # Platform specific poptions.
 platform_libs = # Platform specific libraries.
@@ -159,33 +179,33 @@ switch $c.target.class
             platform_libs += ws2_32.lib mswsock.lib advapi32.lib
 
         platform_poptions += -D_WIN32_WINNT=0x0600 -D_CRT_SECURE_NO_WARNINGS -D_CRT_RAND_S
-        nng_poptions += -DNNG_PLATFORM_WINDOWS
+        nng_impl_poptions += -DNNG_PLATFORM_WINDOWS
     }
     case 'linux'
     {
-        nng_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_LINUX -DNNG_USE_EVENTFD -DNNG_HAVE_ABSTRACT_SOCKETS
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_LINUX -DNNG_USE_EVENTFD -DNNG_HAVE_ABSTRACT_SOCKETS
     }
     case 'freebsd'
     {
-        nng_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
     }
     case 'netbsd'
     {
-        nng_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
     }
     case 'openbsd'
     {
-        nng_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
     }
     case 'macos'
     {
-        nng_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_DARWIN
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_DARWIN
     }
     default
     {
         # hope for POSIX
         warn "This platform may not be supported: $c.target.class"
-        nng_poptions +=  -DNNG_PLATFORM_POSIX
+        nng_impl_poptions +=  -DNNG_PLATFORM_POSIX
     }
 }
 
@@ -203,13 +223,13 @@ src_pfx_src = [dir_path] $src_root/src/
 out_pfx_tst = [dir_path] $out_root/src/testing/
 src_pfx_tst = [dir_path] $src_root/src/testing/
 
-testing_poptions =  -DNNG_STATIC_LIB -DNNG_TEST_LIB -DNNG_PRIVATE
+testing_intf_poptions =  "-I$out_pfx_tst" "-I$src_pfx_tst" -DNNG_TEST_LIB -DNNG_PRIVATE $nng_impl_poptions
 
 c.poptions += "-I$out_pfx_src" "-I$src_pfx_src" \
               "-I$out_pfx_inc" "-I$src_pfx_inc" \
               "-I$out_pfx_tst" "-I$src_pfx_tst" \
               $platform_poptions \
-              $nng_poptions
+              $nng_impl_poptions
 c.libs += $platform_libs
 
 {hbmia obja}{*}: c.poptions += -DNNG_STATIC_LIB
@@ -226,8 +246,8 @@ liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
 
 lib{nng_testing}:
 {
-  c.poptions = $testing_poptions
-  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" "-I$out_pfx_tst" "-I$src_pfx_tst" $testing_poptions $nng_poptions
+  c.poptions = $testing_intf_poptions
+  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" $testing_intf_poptions
   c.export.libs = lib{nng}
 }
 
