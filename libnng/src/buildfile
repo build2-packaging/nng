@@ -69,11 +69,11 @@ liba{nng_testing}: c{sp/protocol/pair1/*_test}: include = $config.libnng.proto_p
 liba{nng_testing}: c{sp/protocol/pipeline0/pull_test}: include = $config.libnng.proto_pull0
 liba{nng_testing}: c{sp/protocol/pipeline0/push_test}: include = $config.libnng.proto_push0
 liba{nng_testing}: c{sp/protocol/pubsub0/pub_test}: include = $config.libnng.proto_pub0
-liba{nng_testing}: c{sp/protocol/pubsub0/sub_test sp/protocol/pubsub0/xsub_test}: include = $config.libnng.proto_sub0
-liba{nng_testing}: c{sp/protocol/reqrep0/req_test sp/protocol/reqrep0/xreq_test}: include = $config.libnng.proto_req0
-liba{nng_testing}: c{sp/protocol/reqrep0/rep_test sp/protocol/reqrep0/xrep_test}: include = $config.libnng.proto_rep0
-liba{nng_testing}: c{sp/protocol/survey0/survey_test sp/protocol/survey0/xsurvey_test}: include = $config.libnng.proto_surveyor0
-liba{nng_testing}: c{sp/protocol/survey0/respond_test sp/protocol/survey0/xrespond_test}: include = $config.libnng.proto_respondent0
+liba{nng_testing}: sp/protocol/pubsub0/c{sub_test xsub_test}: include = $config.libnng.proto_sub0
+liba{nng_testing}: sp/protocol/reqrep0/c{req_test xreq_test}: include = $config.libnng.proto_req0
+liba{nng_testing}: sp/protocol/reqrep0/c{rep_test xrep_test}: include = $config.libnng.proto_rep0
+liba{nng_testing}: sp/protocol/survey0/c{survey_test xsurvey_test}: include = $config.libnng.proto_surveyor0
+liba{nng_testing}: sp/protocol/survey0/c{respond_test xrespond_test}: include = $config.libnng.proto_respondent0
 
 liba{nng_testing}: c{sp/transport/ipc/ipc_test}: include = $config.libnng.transport_ipc
 liba{nng_testing}: c{sp/transport/tcp/tcp_test}: include = $config.libnng.transport_tcp
@@ -244,11 +244,11 @@ lib{nng}:
 
 liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
 
-lib{nng_testing}:
+liba{nng_testing}:
 {
   c.poptions = $testing_intf_poptions
   c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" $testing_intf_poptions
-  c.export.libs = lib{nng}
+  c.export.libs = liba{nng}
 }
 
 # For pre-releases use the complete version to make sure they cannot be used
