@@ -17,6 +17,8 @@ if ($use_mbedtls || $use_wolfssl)
     fail 'TLS is currently not supported'
 }
 
+./: lib{nng} liba{nng_testing}
+
 lib{nng}: $pub/{$pub_hdrs}
 lib{nng}: c{*}
 lib{nng}: {h c}{compat/** -compat/**_test}
