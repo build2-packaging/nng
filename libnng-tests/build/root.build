@@ -1,5 +1,3 @@
-#c.std = latest
-
 using c
 
 c{*}: extension = c
