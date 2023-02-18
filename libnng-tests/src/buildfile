@@ -29,7 +29,7 @@ test_files = c{bus \
 for file: $test_files
 {
     test_name = $name($file)_test
-    exe{$test_name}: $file {h c}{convey} h{stubs}
+    exe{$test_name}: $file {h c}{convey} h{stubs trantest}
     exe{$test_name}: $impl_libs
     exe{$test_name}: test.options = -v
     exe{$test_name}: test.timeout = /10
