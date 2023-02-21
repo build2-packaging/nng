@@ -1,6 +1,5 @@
-project = libnng-examples
+project = # unnamed examples
 
-using version
 using config
 using test
 using install

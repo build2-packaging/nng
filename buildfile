@@ -1,3 +1,3 @@
-import pkgs = libnng/ libnng-examples/ libnng-tests/
+import pkgs = libnng/
 
 ./: $pkgs

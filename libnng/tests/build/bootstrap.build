@@ -1,4 +1,4 @@
-project = # unnamed examples
+project = # unnamed tests
 
 using config
 using test
