@@ -1,0 +1,66 @@
+
+import impl_libs = libnng%liba{nng_testing}
+
+lib{convey}: {h c}{convey}
+
+test_files = c{bus \
+    device \
+    files \
+    httpclient \
+    httpserver \
+    inproc \
+    ipc \
+    ipcsupp \
+    ipcwinsec \
+    multistress \
+    nonblock \
+    options \
+    pipe \
+    pollfd \
+    reqctx \
+    reqstress \
+    scalability \
+    stats \
+    synch \
+    tcpsupp \
+    tcp \
+    tcp6 \
+    udp \
+    ws}
+
+test_ports = 13000 \
+    13020 \
+    13040 \
+    13060 \
+    13080 \
+    13100 \
+    13120 \
+    13140 \
+    13160 \
+    13180 \
+    13200 \
+    13220 \
+    13240 \
+    13260 \
+    13280 \
+    13300 \
+    13320 \
+    13340 \
+    13360 \
+    13380 \
+    13400 \
+    13420 \
+    13440 \
+    13460
+
+for i: $integer_sequence(0, $size($test_files))
+{
+    test_port = ($test_ports[$i])
+    test_file = ($test_files[$i])
+    test_name = $name($test_file)_test
+    exe{$test_name}: $test_file  h{stubs trantest}
+    exe{$test_name}: $impl_libs lib{convey}
+    exe{$test_name}: test.options = -v
+    exe{$test_name}: test.arguments = TEST_PORT=$test_port
+    ./: exe{$test_name}
+}

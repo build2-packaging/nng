@@ -1,0 +1,1 @@
+../../../upstream/tests/compat_bug777.c

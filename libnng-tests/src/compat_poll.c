@@ -1,1 +1,0 @@
-../../upstream/tests/compat_poll.c
