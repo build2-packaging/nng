@@ -1,0 +1,1 @@
+env TEST_PORT=$test_port -- $* 1>- == 0
