@@ -1,11 +1,11 @@
 : 1
 name: libnng
 version: 1.5.2-a.0.z
-project: NNG
+project: nng
 summary: nanomsg-next-generation - light-weight brokerless messaging.
 license: MIT
 description-file: README.md
-topics: C, Network, IoT
+topics: C, network
 url: https://nng.nanomsg.org/
 src-url: https://github.com/nanomsg/nng
 doc-url: https://nng.nanomsg.org/man/

@@ -82,7 +82,12 @@ config_flags = \
     ($config.libnng.supp_tls && $use_mbedtls) \
     ($config.libnng.supp_tls && $use_mbedtls) \
     ($config.libnng.supp_tls && $use_wolfssl) \
-    ($config.libnng.supp_tls && $use_wolfssl)
+    ($config.libnng.supp_tls && $use_wolfssl) \
+    $config.libnng.elide_deprecated \
+    $config.libnng.set_stacksize \
+    $config.libnng.enable_stats \
+    ($config.libnng.resolve_concurrency != [null]) \
+    ($config.libnng.num_taskq_threads != [null])
 
 
 config_poptions = \
@@ -107,25 +112,8 @@ config_poptions = \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed \
     NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_mbed \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf \
-    NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_wolf
-
-for i: $integer_sequence(0, $size($config_poptions))
-{
-    flag = ($config_flags[$i])
-    opt = ($config_poptions[$i])
-    if $flag
-    {
-        c.poptions += -D$opt
-    }
-}
-
-config_flags = $config.libnng.elide_deprecated \
-    $config.libnng.set_stacksize \
-    $config.libnng.enable_stats \
-    ($config.libnng.resolve_concurrency != [null]) \
-    ($config.libnng.num_taskq_threads != [null])
-
-config_poptions = NNG_ELIDE_DEPRECATED \
+    NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_wolf \
+    NNG_ELIDE_DEPRECATED \
     NNG_SETSTACKSIZE \
     NNG_ENABLE_STATS \
     NNG_RESOLV_CONCURRENCY=$config.libnng.resolve_concurrency \
@@ -183,7 +171,7 @@ switch $c.target.class
     {
         # hope for POSIX
         warn "This platform may not be supported: $c.target.class"
-        platform_poptions +=  -DNNG_PLATFORM_POSIX
+        platform_poptions += -DNNG_PLATFORM_POSIX
     }
 }
 
