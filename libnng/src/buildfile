@@ -137,7 +137,7 @@ switch $c.target.class
 {
     case 'windows'
     {
-        if ($cxx.target.system == 'mingw32')
+        if ($c.target.system == 'mingw32')
             platform_libs += -lws2_32 -lmswsock -ladvapi32
         else
             platform_libs += ws2_32.lib mswsock.lib advapi32.lib
