@@ -2,5 +2,4 @@ project = # unnamed examples
 
 using config
 using test
-using install
 using dist
