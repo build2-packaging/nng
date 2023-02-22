@@ -12,8 +12,6 @@ doc-url: https://nng.nanomsg.org/man/
 package-url: https://github.com/build2-packaging/nng
 package-email: packaging@build2.org ; Mailing list.
 builds: default
-examples: libnng-examples
-tests: libnng-tests
 
 depends: * build2 >= 0.16.0-
 depends: * bpkg >= 0.16.0-
