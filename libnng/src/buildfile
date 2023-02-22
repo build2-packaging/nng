@@ -5,13 +5,17 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
+# as in upstream: anything that is not windows is considered
+# posix
 is_windows = ($c.target.class == 'windows')
 is_posix = (!$is_windows)
 
+# tls/ssl backend can be defined by user
 use_mbedtls = ($config.libnng.tls_engine == 'mbedtls')
 use_wolfssl = ($config.libnng.tls_engine == 'wolfssl')
 use_supp_tls = ($config.libnng.supp_tls && ($use_mbedtls || $use_wolfssl))
 
+# packages are missing so TLS is currently not supported
 if ($use_mbedtls || $use_wolfssl)
 {
     fail 'TLS is currently not supported'
@@ -21,73 +25,75 @@ if ($use_mbedtls || $use_wolfssl)
 
 lib{nng}: $pub/{$pub_hdrs}
 lib{nng}: c{*}
-lib{nng}: {h c}{compat/** -compat/**_test}
-lib{nng}: {h c}{core/* -core/*_test}
-lib{nng}: {h c}{platform/windows/*}: include = $is_windows
-lib{nng}: {h c}{platform/posix/*}: include = $is_posix
-lib{nng}: {h c}{sp/transport}
+lib{nng}: compat/nanomsg/{h c}{* -*_test}
+lib{nng}: core/{h c}{* -*_test}
+lib{nng}: platform/windows/{h c}{*}: include = $is_windows
+lib{nng}: platform/posix/{h c}{*}: include = $is_posix
+lib{nng}: sp/{h c}{transport}
 
 # protocol compilation
-lib{nng}: c{sp/protocol/bus0/bus}: include = $config.libnng.proto_bus0
-lib{nng}: c{sp/protocol/pair0/pair}: include = $config.libnng.proto_pair0
-lib{nng}: c{sp/protocol/pair1/pair sp/protocol/pair1/pair1_poly}: include = $config.libnng.proto_pair1
-lib{nng}: c{sp/protocol/pipeline0/pull}: include = $config.libnng.proto_pull0
-lib{nng}: c{sp/protocol/pipeline0/push}: include = $config.libnng.proto_push0
-lib{nng}: c{sp/protocol/pubsub0/pub}: include = $config.libnng.proto_pub0
-lib{nng}: c{sp/protocol/pubsub0/sub sp/protocol/pubsub0/xsub}: include = $config.libnng.proto_sub0
-lib{nng}: c{sp/protocol/reqrep0/req sp/protocol/reqrep0/xreq}: include = $config.libnng.proto_req0
-lib{nng}: c{sp/protocol/reqrep0/rep sp/protocol/reqrep0/xrep}: include = $config.libnng.proto_rep0
-lib{nng}: c{sp/protocol/survey0/survey sp/protocol/survey0/xsurvey}: include = $config.libnng.proto_surveyor0
-lib{nng}: c{sp/protocol/survey0/respond sp/protocol/survey0/xrespond}: include = $config.libnng.proto_respondent0
+lib{nng}: sp/protocol/bus0/c{bus}: include = $config.libnng.proto_bus0
+lib{nng}: sp/protocol/pair0/c{pair}: include = $config.libnng.proto_pair0
+lib{nng}: sp/protocol/pair1/c{pair pair1_poly}: include = $config.libnng.proto_pair1
+lib{nng}: sp/protocol/pipeline0/c{pull}: include = $config.libnng.proto_pull0
+lib{nng}: sp/protocol/pipeline0/c{push}: include = $config.libnng.proto_push0
+lib{nng}: sp/protocol/pubsub0/c{pub}: include = $config.libnng.proto_pub0
+lib{nng}: sp/protocol/pubsub0/c{sub xsub}: include = $config.libnng.proto_sub0
+lib{nng}: sp/protocol/reqrep0/c{req xreq}: include = $config.libnng.proto_req0
+lib{nng}: sp/protocol/reqrep0/c{rep xrep}: include = $config.libnng.proto_rep0
+lib{nng}: sp/protocol/survey0/c{survey xsurvey}: include = $config.libnng.proto_surveyor0
+lib{nng}: sp/protocol/survey0/c{respond xrespond}: include = $config.libnng.proto_respondent0
 
 # transport compilation
-lib{nng}: c{sp/transport/inproc/inproc}: include = $config.libnng.transport_inproc
-lib{nng}: c{sp/transport/ipc/ipc}: include = $config.libnng.transport_ipc
-lib{nng}: c{sp/transport/tcp/tcp}: include = $config.libnng.transport_tcp
-lib{nng}: c{sp/transport/tls/tls}: include = $config.libnng.transport_tls
-lib{nng}: c{sp/transport/ws/websocket}: include = $config.libnng.transport_ws
+lib{nng}: sp/transport/inproc/c{inproc}: include = $config.libnng.transport_inproc
+lib{nng}: sp/transport/ipc/c{ipc}: include = $config.libnng.transport_ipc
+lib{nng}: sp/transport/tcp/c{tcp}: include = $config.libnng.transport_tcp
+lib{nng}: sp/transport/tls/c{tls}: include = $config.libnng.transport_tls
+lib{nng}: sp/transport/ws/c{websocket}: include = $config.libnng.transport_ws
 
 # supplemental compilation
-lib{nng}: {h c}{supplemental/base64/base64}: include = $config.libnng.supp_base64
-lib{nng}: c{supplemental/http/http_public} h{supplemental/http/http_api}
-lib{nng}: c{supplemental/http/* -supplemental/http/http_public}: include = $config.libnng.supp_http
-lib{nng}: {h c}{supplemental/sha1/sha1}: include = $config.libnng.supp_sha1
-lib{nng}: h{supplemental/tls/tls_api} c{supplemental/tls/tls_common}
-lib{nng}: c{supplemental/util/*}
-lib{nng}: {h c}{supplemental/tls/mbedtls/*}: include = ($config.libnng.supp_tls && $use_mbedtls)
-lib{nng}: {h c}{supplemental/websocket/websocket}: include = $config.libnng.supp_websocket
-lib{nng}: c{supplemental/websocket/stub}: include = (!$config.libnng.supp_websocket)
+lib{nng}: supplemental/base64/{h c}{base64}: include = $config.libnng.supp_base64
+lib{nng}: supplemental/http/c{http_public} supplemental/http/h{http_api}
+lib{nng}: supplemental/http/c{* -http_public}: include = $config.libnng.supp_http
+lib{nng}: supplemental/sha1/{h c}{sha1}: include = $config.libnng.supp_sha1
+lib{nng}: supplemental/tls/c{tls_common} supplemental/tls/h{tls_api}
+lib{nng}: supplemental/util/c{*}
+lib{nng}: supplemental/tls/mbedtls/{h c}{*}: include = ($config.libnng.supp_tls && $use_mbedtls)
+lib{nng}: supplemental/websocket/{h c}{websocket}: include = $config.libnng.supp_websocket
+lib{nng}: supplemental/websocket/c{stub}: include = (!$config.libnng.supp_websocket)
 
 
 # testing lib can only be used with static linkage
-liba{nng_testing}: {h c}{testing/*}
-liba{nng_testing}: c{compat/**_test}
-liba{nng_testing}: c{core/*_test}
-liba{nng_testing}: c{platform/*_test}
+# and is only used to build tests
+liba{nng_testing}: testing/{h c}{*}
+liba{nng_testing}: compat/nanomsg/c{*_test}
+liba{nng_testing}: core/c{*_test}
+liba{nng_testing}: platform/c{*_test}
 
-liba{nng_testing}: c{sp/protocol/bus0/*_test}: include = $config.libnng.proto_bus0
-liba{nng_testing}: c{sp/protocol/pair0/*_test}: include = $config.libnng.proto_pair0
-liba{nng_testing}: c{sp/protocol/pair1/*_test}: include = $config.libnng.proto_pair1
-liba{nng_testing}: c{sp/protocol/pipeline0/pull_test}: include = $config.libnng.proto_pull0
-liba{nng_testing}: c{sp/protocol/pipeline0/push_test}: include = $config.libnng.proto_push0
-liba{nng_testing}: c{sp/protocol/pubsub0/pub_test}: include = $config.libnng.proto_pub0
+liba{nng_testing}: sp/protocol/bus0/c{*_test}: include = $config.libnng.proto_bus0
+liba{nng_testing}: sp/protocol/pair0/c{*_test}: include = $config.libnng.proto_pair0
+liba{nng_testing}: sp/protocol/pair1/c{*_test}: include = $config.libnng.proto_pair1
+liba{nng_testing}: sp/protocol/pipeline0/c{pull_test}: include = $config.libnng.proto_pull0
+liba{nng_testing}: sp/protocol/pipeline0/c{push_test}: include = $config.libnng.proto_push0
+liba{nng_testing}: sp/protocol/pubsub0/c{pub_test}: include = $config.libnng.proto_pub0
 liba{nng_testing}: sp/protocol/pubsub0/c{sub_test xsub_test}: include = $config.libnng.proto_sub0
 liba{nng_testing}: sp/protocol/reqrep0/c{req_test xreq_test}: include = $config.libnng.proto_req0
 liba{nng_testing}: sp/protocol/reqrep0/c{rep_test xrep_test}: include = $config.libnng.proto_rep0
 liba{nng_testing}: sp/protocol/survey0/c{survey_test xsurvey_test}: include = $config.libnng.proto_surveyor0
 liba{nng_testing}: sp/protocol/survey0/c{respond_test xrespond_test}: include = $config.libnng.proto_respondent0
 
-liba{nng_testing}: c{sp/transport/ipc/ipc_test}: include = $config.libnng.transport_ipc
-liba{nng_testing}: c{sp/transport/tcp/tcp_test}: include = $config.libnng.transport_tcp
-liba{nng_testing}: c{sp/transport/ws/ws_test}: include = $config.libnng.transport_ws
+liba{nng_testing}: sp/transport/ipc/c{ipc_test}: include = $config.libnng.transport_ipc
+liba{nng_testing}: sp/transport/tcp/c{tcp_test}: include = $config.libnng.transport_tcp
+liba{nng_testing}: sp/transport/ws/c{ws_test}: include = $config.libnng.transport_ws
 
-liba{nng_testing}: c{supplemental/base64/base64_test}: include = $config.libnng.supp_base64
-liba{nng_testing}: c{supplemental/sha1/sha1_test}: include = $config.libnng.supp_sha1
-liba{nng_testing}: c{supplemental/tls/tls_test}
-liba{nng_testing}: c{supplemental/websocket/*_test}: include = $config.libnng.supp_websocket
+liba{nng_testing}: supplemental/base64/c{base64_test}: include = $config.libnng.supp_base64
+liba{nng_testing}: supplemental/sha1/c{sha1_test}: include = $config.libnng.supp_sha1
+liba{nng_testing}: supplemental/tls/c{tls_test}
+liba{nng_testing}: supplemental/websocket/c{*_test}: include = $config.libnng.supp_websocket
 liba{nng_testing}: liba{nng}
 
-config_flags = $config.libnng.proto_bus0 \
+config_flags = \
+    $config.libnng.proto_bus0 \
     $config.libnng.proto_pair0 \
     $config.libnng.proto_pair1 \
     $config.libnng.proto_pull0 \
@@ -111,7 +117,8 @@ config_flags = $config.libnng.proto_bus0 \
     ($config.libnng.supp_tls && $use_wolfssl)
 
 
-config_poptions = NNG_HAVE_BUS0 \
+config_poptions = \
+    NNG_HAVE_BUS0 \
     NNG_HAVE_PAIR0 \
     NNG_HAVE_PAIR1 \
     NNG_HAVE_PULL0 \
@@ -130,10 +137,12 @@ config_poptions = NNG_HAVE_BUS0 \
     NNG_SUPP_HTTP \
     NNG_SUPP_TLS \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed \
-    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_mbed \
+    NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_mbed \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf \
-    NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf
+    NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_wolf
 
+# these options are typically private but have to be exposed
+# for the tests
 nng_impl_poptions =
 for i: $integer_sequence(0, $size($config_poptions))
 {
@@ -185,7 +194,10 @@ switch $c.target.class
     }
     case 'linux'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_LINUX -DNNG_USE_EVENTFD -DNNG_HAVE_ABSTRACT_SOCKETS
+        nng_impl_poptions += -DNNG_PLATFORM_POSIX \
+            -DNNG_PLATFORM_LINUX \
+            -DNNG_USE_EVENTFD \
+            -DNNG_HAVE_ABSTRACT_SOCKETS
     }
     case 'freebsd'
     {
@@ -225,8 +237,6 @@ src_pfx_src = [dir_path] $src_root/src/
 out_pfx_tst = [dir_path] $out_root/src/testing/
 src_pfx_tst = [dir_path] $src_root/src/testing/
 
-testing_intf_poptions =  "-I$out_pfx_tst" "-I$src_pfx_tst" -DNNG_TEST_LIB -DNNG_PRIVATE $nng_impl_poptions
-
 c.poptions += "-I$out_pfx_src" "-I$src_pfx_src" \
               "-I$out_pfx_inc" "-I$src_pfx_inc" \
               "-I$out_pfx_tst" "-I$src_pfx_tst" \
@@ -248,8 +258,7 @@ liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
 
 liba{nng_testing}:
 {
-  c.poptions = $testing_intf_poptions
-  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" $testing_intf_poptions
+  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" "-I$out_pfx_tst" "-I$src_pfx_tst" $nng_impl_poptions
   c.export.libs = liba{nng}
 }
 
