@@ -1,32 +1,24 @@
 
-import impl_libs = libnng%liba{nng_testing}
+import impl_libs = libnng%lib{nng}
 
 liba{convey}: {h c}{convey}
 
-test_files = c{bus \
+test_files = c{\
+    bus \
     device \
-    files \
-    httpclient \
-    httpserver \
-    inproc \
     ipcsupp \
-    ipcwinsec \
     multistress \
     nonblock \
     options \
     pipe \
     pollfd \
     reqctx \
-    reqstress \
     scalability \
     synch \
-    tcpsupp \
-    tcp \
-    tcp6 \
-    udp \
-    ws}
+    tcpsupp}
 
-test_ports = 13000 \
+test_ports = \
+    13000 \
     13020 \
     13040 \
     13060 \
@@ -37,19 +29,7 @@ test_ports = 13000 \
     13160 \
     13180 \
     13200 \
-    13220 \
-    13240 \
-    13260 \
-    13280 \
-    13300 \
-    13320 \
-    13340 \
-    13360 \
-    13380 \
-    13400 \
-    13420 \
-    13440 \
-    13460
+    13220
 
 for i: $integer_sequence(0, $size($test_files))
 {

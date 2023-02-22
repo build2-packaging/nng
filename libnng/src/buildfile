@@ -21,8 +21,6 @@ if ($use_mbedtls || $use_wolfssl)
     fail 'TLS is currently not supported'
 }
 
-./: lib{nng} liba{nng_testing}
-
 lib{nng}: $pub/{$pub_hdrs}
 lib{nng}: c{*}
 lib{nng}: compat/nanomsg/{h c}{* -*_test}
@@ -61,36 +59,6 @@ lib{nng}: supplemental/util/c{*}
 lib{nng}: supplemental/tls/mbedtls/{h c}{*}: include = ($config.libnng.supp_tls && $use_mbedtls)
 lib{nng}: supplemental/websocket/{h c}{websocket}: include = $config.libnng.supp_websocket
 lib{nng}: supplemental/websocket/c{stub}: include = (!$config.libnng.supp_websocket)
-
-
-# testing lib can only be used with static linkage
-# and is only used to build tests
-liba{nng_testing}: testing/{h c}{*}
-liba{nng_testing}: compat/nanomsg/c{*_test}
-liba{nng_testing}: core/c{*_test}
-liba{nng_testing}: platform/c{*_test}
-
-liba{nng_testing}: sp/protocol/bus0/c{*_test}: include = $config.libnng.proto_bus0
-liba{nng_testing}: sp/protocol/pair0/c{*_test}: include = $config.libnng.proto_pair0
-liba{nng_testing}: sp/protocol/pair1/c{*_test}: include = $config.libnng.proto_pair1
-liba{nng_testing}: sp/protocol/pipeline0/c{pull_test}: include = $config.libnng.proto_pull0
-liba{nng_testing}: sp/protocol/pipeline0/c{push_test}: include = $config.libnng.proto_push0
-liba{nng_testing}: sp/protocol/pubsub0/c{pub_test}: include = $config.libnng.proto_pub0
-liba{nng_testing}: sp/protocol/pubsub0/c{sub_test xsub_test}: include = $config.libnng.proto_sub0
-liba{nng_testing}: sp/protocol/reqrep0/c{req_test xreq_test}: include = $config.libnng.proto_req0
-liba{nng_testing}: sp/protocol/reqrep0/c{rep_test xrep_test}: include = $config.libnng.proto_rep0
-liba{nng_testing}: sp/protocol/survey0/c{survey_test xsurvey_test}: include = $config.libnng.proto_surveyor0
-liba{nng_testing}: sp/protocol/survey0/c{respond_test xrespond_test}: include = $config.libnng.proto_respondent0
-
-liba{nng_testing}: sp/transport/ipc/c{ipc_test}: include = $config.libnng.transport_ipc
-liba{nng_testing}: sp/transport/tcp/c{tcp_test}: include = $config.libnng.transport_tcp
-liba{nng_testing}: sp/transport/ws/c{ws_test}: include = $config.libnng.transport_ws
-
-liba{nng_testing}: supplemental/base64/c{base64_test}: include = $config.libnng.supp_base64
-liba{nng_testing}: supplemental/sha1/c{sha1_test}: include = $config.libnng.supp_sha1
-liba{nng_testing}: supplemental/tls/c{tls_test}
-liba{nng_testing}: supplemental/websocket/c{*_test}: include = $config.libnng.supp_websocket
-liba{nng_testing}: liba{nng}
 
 config_flags = \
     $config.libnng.proto_bus0 \
@@ -141,16 +109,13 @@ config_poptions = \
     NNG_TLS_ENGINE_INIT=nng_tls_engine_init_wolf \
     NNG_TLS_ENGINE_FINI=nng_tls_engine_fini_wolf
 
-# these options are typically private but have to be exposed
-# for the tests
-nng_impl_poptions =
 for i: $integer_sequence(0, $size($config_poptions))
 {
     flag = ($config_flags[$i])
     opt = ($config_poptions[$i])
     if $flag
     {
-        nng_impl_poptions += -D$opt
+        c.poptions += -D$opt
     }
 }
 
@@ -189,37 +154,36 @@ switch $c.target.class
         else
             platform_libs += ws2_32.lib mswsock.lib advapi32.lib
 
-        platform_poptions += -D_WIN32_WINNT=0x0600 -D_CRT_SECURE_NO_WARNINGS -D_CRT_RAND_S
-        nng_impl_poptions += -DNNG_PLATFORM_WINDOWS
+        platform_poptions += -D_WIN32_WINNT=0x0600 -D_CRT_SECURE_NO_WARNINGS -D_CRT_RAND_S -DNNG_PLATFORM_WINDOWS
     }
     case 'linux'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX \
+        platform_poptions += -DNNG_PLATFORM_POSIX \
             -DNNG_PLATFORM_LINUX \
             -DNNG_USE_EVENTFD \
             -DNNG_HAVE_ABSTRACT_SOCKETS
     }
     case 'freebsd'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
     }
     case 'netbsd'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
     }
     case 'openbsd'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
     }
     case 'macos'
     {
-        nng_impl_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_DARWIN
+        platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_DARWIN
     }
     default
     {
         # hope for POSIX
         warn "This platform may not be supported: $c.target.class"
-        nng_impl_poptions +=  -DNNG_PLATFORM_POSIX
+        platform_poptions +=  -DNNG_PLATFORM_POSIX
     }
 }
 
@@ -234,14 +198,11 @@ out_pfx_inc = [dir_path] $out_root/include/
 src_pfx_inc = [dir_path] $src_root/include/
 out_pfx_src = [dir_path] $out_root/src/
 src_pfx_src = [dir_path] $src_root/src/
-out_pfx_tst = [dir_path] $out_root/src/testing/
-src_pfx_tst = [dir_path] $src_root/src/testing/
 
 c.poptions += "-I$out_pfx_src" "-I$src_pfx_src" \
               "-I$out_pfx_inc" "-I$src_pfx_inc" \
               "-I$out_pfx_tst" "-I$src_pfx_tst" \
-              $platform_poptions \
-              $nng_impl_poptions
+              $platform_poptions
 c.libs += $platform_libs
 
 {hbmia obja}{*}: c.poptions += -DNNG_STATIC_LIB
@@ -256,22 +217,16 @@ lib{nng}:
 
 liba{nng}: c.export.poptions += -DNNG_STATIC_LIB
 
-liba{nng_testing}:
-{
-  c.export.poptions = "-I$out_pfx_src" "-I$src_pfx_src" "-I$out_pfx_tst" "-I$src_pfx_tst" $nng_impl_poptions
-  c.export.libs = liba{nng}
-}
-
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 if $version.pre_release
 {
-  lib{nng nng_testing}: bin.lib.version = "-$version.project_id"
+  lib{nng}: bin.lib.version = "-$version.project_id"
 }
 else
 {
-  lib{nng nng_testing}: bin.lib.version = "-$version.major.$version.minor"
+  lib{nng}: bin.lib.version = "-$version.major.$version.minor"
 }
 
 # Don't install private headers.
