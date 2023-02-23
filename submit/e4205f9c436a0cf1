@@ -1,0 +1,6 @@
+: 1
+name: libnng
+version: 1.5.2
+project: nng
+summary: nanomsg-next-generation - light-weight brokerless messaging.
+license: MIT
