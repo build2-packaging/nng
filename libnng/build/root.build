@@ -6,6 +6,8 @@ c{*}: extension = c
 # Assume headers are importable unless stated otherwise.
 h{*}: c.importable = true
 
+# The test target for cross-testing (running tests under Wine, etc).
+test.target = $c.target
 
 config [bool] config.libnng.elide_deprecated ?= false
 
@@ -51,6 +53,3 @@ config [bool] config.libnng.supp_websocket ?= true
 
 # can be either 'none', 'mbdedtls' or 'wolfssl'
 config [string] config.libnng.tls_engine ?= none
-
-# The test target for cross-testing (running tests under Wine, etc).
-test.target = $c.target
