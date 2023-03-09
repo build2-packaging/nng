@@ -1,4 +1,3 @@
 import impl_libs = libnng%lib{nng}
 
-exe{rest_server}: c{server}
-exe{rest_server}: $impl_libs
+exe{rest_server}: c{server} $impl_libs
