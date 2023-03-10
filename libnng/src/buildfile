@@ -86,8 +86,8 @@ config_flags = \
     $config.libnng.elide_deprecated \
     $config.libnng.set_stacksize \
     $config.libnng.enable_stats \
-    ($config.libnng.resolve_concurrency != [null]) \
-    ($config.libnng.num_taskq_threads != [null])
+    ($config.libnng.resolve_concurrency != 0) \
+    ($config.libnng.num_taskq_threads != 0)
 
 
 config_poptions = \
@@ -116,8 +116,8 @@ config_poptions = \
     NNG_ELIDE_DEPRECATED \
     NNG_SETSTACKSIZE \
     NNG_ENABLE_STATS \
-    NNG_RESOLV_CONCURRENCY=$config.libnng.resolve_concurrency \
-    NNG_NUM_TASKQ_THREADS=$config.libnng.num_taskq_threads
+    "NNG_RESOLV_CONCURRENCY=$config.libnng.resolve_concurrency" \
+    "NNG_NUM_TASKQ_THREADS=$config.libnng.num_taskq_threads"
 
 for i: $integer_sequence(0, $size($config_poptions))
 {
@@ -129,11 +129,11 @@ for i: $integer_sequence(0, $size($config_poptions))
     }
 }
 
-c.poptions += -DNNG_MAX_TASKQ_THREADS=$config.libnng.max_taskq_threads
+c.poptions += "-DNNG_MAX_TASKQ_THREADS=$config.libnng.max_taskq_threads"
 
 platform_poptions = # Platform specific poptions.
 platform_libs = # Platform specific libraries.
-switch $c.target.class
+switch $c.target.class, $c.target.system
 {
     case 'windows'
     {
@@ -151,15 +151,15 @@ switch $c.target.class
             -DNNG_USE_EVENTFD \
             -DNNG_HAVE_ABSTRACT_SOCKETS
     }
-    case 'freebsd'
+    case 'bsd', 'freebsd'
     {
         platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_FREEBSD
     }
-    case 'netbsd'
+    case 'bsd', 'netbsd'
     {
         platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_NETBSD
     }
-    case 'openbsd'
+    case 'bsd', 'openbsd'
     {
         platform_poptions += -DNNG_PLATFORM_POSIX -DNNG_PLATFORM_OPENBSD
     }

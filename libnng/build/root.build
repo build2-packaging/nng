@@ -20,9 +20,9 @@ config [bool] config.libnng.elide_deprecated ?= false
 config [bool] config.libnng.set_stacksize ?= false
 
 config [bool] config.libnng.enable_stats ?= false
-config [string] config.libnng.resolve_concurrency ?= [null]
-config [string] config.libnng.num_taskq_threads ?= [null]
-config [string] config.libnng.max_taskq_threads ?= 16
+config [uint64] config.libnng.resolve_concurrency ?= 0 # zero means "auto-detect"
+config [uint64] config.libnng.num_taskq_threads ?= 0 # zero means "auto-detect"
+config [uint64] config.libnng.max_taskq_threads ?= 16
 
 # protocol options
 config [bool] config.libnng.proto_bus0 ?= true
@@ -51,5 +51,5 @@ config [bool] config.libnng.supp_sha1 ?= true
 config [bool] config.libnng.supp_tls ?= false
 config [bool] config.libnng.supp_websocket ?= true
 
-# can be either 'none', 'mbdedtls' or 'wolfssl'
+# can be either 'none', 'mbedtls' or 'wolfssl'
 config [string] config.libnng.tls_engine ?= none
