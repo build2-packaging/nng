@@ -1,1 +1,1 @@
-../upstream/README.adoc
+../README.md
